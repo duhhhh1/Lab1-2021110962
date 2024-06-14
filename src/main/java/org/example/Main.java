@@ -73,9 +73,9 @@ public class Main {
     /**显示有向图的方法.
      * 使用GraphStream库来可视化图形.
      *
-     * @param G 包含节点和边的图，其中节点是字符串类型，边是Type类型.
+     * @param g 包含节点和边的图，其中节点是字符串类型，边是Type类型.
      */
-    public static void showDirectedGraph(Map<String, Type> G) {
+    public static void showDirectedGraph(Map<String, Type> g) {
         graph.addAttribute("ui.stylesheet",
                 "node { shape:box;fill-color: cyan; size: 60px; "
                         + "text-size: 20; text-alignment: center;} "
@@ -84,7 +84,7 @@ public class Main {
                         + "text-size: 16;arrow-size: 8px;text-alignment: center;}");
 
         // 添加节点
-        for (Map.Entry<String, Type> entry : G.entrySet()) {
+        for (Map.Entry<String, Type> entry : g.entrySet()) {
             Node node = graph.addNode(entry.getKey());
             node.addAttribute("ui.label", entry.getKey());
             //node.addAttribute("ui.layout", "center");
@@ -92,7 +92,7 @@ public class Main {
         }
 
         // 添加边
-        for (Map.Entry<String, Type> entry : G.entrySet()) {
+        for (Map.Entry<String, Type> entry : g.entrySet()) {
             Type sourceNode = entry.getValue();
             for (Map.Entry<Type, Integer> edge : sourceNode.outgoingEdges.entrySet()) {
                 Type targetNode = edge.getKey();
@@ -205,34 +205,34 @@ public class Main {
 
         PriorityQueue<String> queue = new PriorityQueue<>(Comparator.comparingInt(distances::get));
         queue.add(start);
+        if (nodes.get(start) != null) {
+            while (!queue.isEmpty()) {
+                String currentNode = queue.poll();
 
-        while (!queue.isEmpty()) {
-            String currentNode = queue.poll();
-
-            if (currentNode.equals(end)) {
-                // 构建最短路径
-                StringBuilder shortestPath = new StringBuilder();
-                while (previousNodes.get(currentNode) != null) {
-                    shortestPath.insert(0, currentNode + " ");
-                    currentNode = previousNodes.get(currentNode).word;
+                if (currentNode.equals(end)) {
+                    // 构建最短路径
+                    StringBuilder shortestPath = new StringBuilder();
+                    while (previousNodes.get(currentNode) != null) {
+                        shortestPath.insert(0, currentNode + " ");
+                        currentNode = previousNodes.get(currentNode).word;
+                    }
+                    shortestPath.insert(0, start + " ");
+                    return shortestPath.toString();
                 }
-                shortestPath.insert(0, start + " ");
-                return shortestPath.toString();
-            }
 
-            Type currentType = nodes.get(currentNode);
-            for (Map.Entry<Type, Integer> entry : currentType.outgoingEdges.entrySet()) {
-                Type neighborType = entry.getKey();
-                int weight = entry.getValue();
-                int distanceThroughCurrent = distances.get(currentNode) + weight;
-                if (distanceThroughCurrent < distances.get(neighborType.word)) {
-                    distances.put(neighborType.word, distanceThroughCurrent);
-                    previousNodes.put(neighborType.word, currentType);
-                    queue.add(neighborType.word);
+                Type currentType = nodes.get(currentNode);
+                for (Map.Entry<Type, Integer> entry : currentType.outgoingEdges.entrySet()) {
+                    Type neighborType = entry.getKey();
+                    int weight = entry.getValue();
+                    int distanceThroughCurrent = distances.get(currentNode) + weight;
+                    if (distanceThroughCurrent < distances.get(neighborType.word)) {
+                        distances.put(neighborType.word, distanceThroughCurrent);
+                        previousNodes.put(neighborType.word, currentType);
+                        queue.add(neighborType.word);
+                    }
                 }
             }
         }
-
         return "No path found";
     }
 
